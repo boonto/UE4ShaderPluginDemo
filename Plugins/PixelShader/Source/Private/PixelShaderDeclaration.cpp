@@ -28,14 +28,12 @@
 
 //These are needed to actually implement the constant buffers so they are available inside our shader
 //They also need to be unique over the entire solution since they can in fact be accessed from any shader
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderConstantParameters,
-                                TEXT("PSConstant"))
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderVariableParameters,
-                                TEXT("PSVariable"))
+IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderConstantParameters, TEXT("PSConstant"))
+IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderVariableParameters, TEXT("PSVariable"))
 
-FPixelShaderDeclaration::FPixelShaderDeclaration(const
-        ShaderMetaType::CompiledShaderInitializerType& Initializer)
-    : FGlobalShader(Initializer) {
+FPixelShaderDeclaration::FPixelShaderDeclaration(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
+    : FGlobalShader(Initializer)
+{
     //This call is what lets the shader system know that the surface OutputSurface is going to be available in the shader. The second parameter is the name it will be known by in the shader
     TextureParameter.Bind(Initializer.ParameterMap,
                           TEXT("TextureParameter"));  //The text parameter here is the name of the parameter in the shader
@@ -43,7 +41,8 @@ FPixelShaderDeclaration::FPixelShaderDeclaration(const
 
 void FPixelShaderDeclaration::SetUniformBuffers(FRHICommandList& RHICmdList,
         FPixelShaderConstantParameters& ConstantParameters,
-        FPixelShaderVariableParameters& VariableParameters) {
+        FPixelShaderVariableParameters& VariableParameters)
+{
     FPixelShaderConstantParametersRef ConstantParametersBuffer;
     FPixelShaderVariableParametersRef VariableParametersBuffer;
 
@@ -63,19 +62,23 @@ void FPixelShaderDeclaration::SetUniformBuffers(FRHICommandList& RHICmdList,
 }
 
 void FPixelShaderDeclaration::SetSurfaces(FRHICommandList& RHICmdList,
-        FShaderResourceViewRHIRef TextureParameterSRV) {
+        FShaderResourceViewRHIRef TextureParameterSRV)
+{
     FPixelShaderRHIParamRef PixelShaderRHI = GetPixelShader();
 
-    if (TextureParameter.IsBound()) { //This actually sets the shader resource view to the texture parameter in the shader :)
+    if (TextureParameter.IsBound())
+    { //This actually sets the shader resource view to the texture parameter in the shader :)
         RHICmdList.SetShaderResourceViewParameter(PixelShaderRHI,
                 TextureParameter.GetBaseIndex(), TextureParameterSRV);
     }
 }
 
-void FPixelShaderDeclaration::UnbindBuffers(FRHICommandList& RHICmdList) {
+void FPixelShaderDeclaration::UnbindBuffers(FRHICommandList& RHICmdList)
+{
     FPixelShaderRHIParamRef PixelShaderRHI = GetPixelShader();
 
-    if (TextureParameter.IsBound()) {
+    if (TextureParameter.IsBound())
+    {
         RHICmdList.SetShaderResourceViewParameter(PixelShaderRHI,
                 TextureParameter.GetBaseIndex(), FShaderResourceViewRHIParamRef());
     }
@@ -83,10 +86,8 @@ void FPixelShaderDeclaration::UnbindBuffers(FRHICommandList& RHICmdList) {
 
 //This is what will instantiate the shader into the engine from the engine/Shaders folder
 //                      ShaderType               ShaderFileName     Shader function name            Type
-IMPLEMENT_SHADER_TYPE(, FVertexShaderExample, TEXT("PixelShaderExample"),
-                      TEXT("MainVertexShader"), SF_Vertex);
-IMPLEMENT_SHADER_TYPE(, FPixelShaderDeclaration, TEXT("PixelShaderExample"),
-                      TEXT("MainPixelShader"), SF_Pixel);
+IMPLEMENT_SHADER_TYPE(, FVertexShaderExample, TEXT("PixelShaderExample"), TEXT("MainVertexShader"), SF_Vertex);
+IMPLEMENT_SHADER_TYPE(, FPixelShaderDeclaration, TEXT("PixelShaderExample"), TEXT("MainPixelShader"), SF_Pixel);
 
 //Needed to make sure the plugin works :)
 IMPLEMENT_MODULE(FDefaultModuleImpl, PixelShader)

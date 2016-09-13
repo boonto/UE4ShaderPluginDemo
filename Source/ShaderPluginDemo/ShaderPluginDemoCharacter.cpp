@@ -10,7 +10,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 //////////////////////////////////////////////////////////////////////////
 // AShaderPluginDemoCharacter
 
-AShaderPluginDemoCharacter::AShaderPluginDemoCharacter() {
+AShaderPluginDemoCharacter::AShaderPluginDemoCharacter()
+{
     // Set size for collision capsule
     GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
@@ -19,16 +20,13 @@ AShaderPluginDemoCharacter::AShaderPluginDemoCharacter() {
     BaseLookUpRate = 45.f;
 
     // Create a CameraComponent
-    FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>
-                                 (TEXT("FirstPersonCamera"));
+    FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-    FirstPersonCameraComponent->RelativeLocation = FVector(-39.56f, 1.75f,
-            64.f); // Position the camera
+    FirstPersonCameraComponent->RelativeLocation = FVector(-39.56f, 1.75f, 64.f); // Position the camera
     FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
     // Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-    Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>
-             (TEXT("CharacterMesh1P"));
+    Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
     Mesh1P->SetOnlyOwnerSee(true);
     Mesh1P->SetupAttachment(FirstPersonCameraComponent);
     Mesh1P->bCastDynamicShadow = false;
@@ -38,14 +36,12 @@ AShaderPluginDemoCharacter::AShaderPluginDemoCharacter() {
 
     // Create a gun mesh component
     FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-    FP_Gun->SetOnlyOwnerSee(
-        true);          // only the owning player will see this mesh
+    FP_Gun->SetOnlyOwnerSee(true);          // only the owning player will see this mesh
     FP_Gun->bCastDynamicShadow = false;
     FP_Gun->CastShadow = false;
     //FP_Gun->AttachTo(Mesh1P, TEXT("GripPoint"), EAttachLocation::SnapToTargetIncludingScale, true);
 
-    FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>
-                        (TEXT("MuzzleLocation"));
+    FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
     FP_MuzzleLocation->SetupAttachment(FP_Gun);
     FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
 
@@ -77,7 +73,8 @@ AShaderPluginDemoCharacter::AShaderPluginDemoCharacter() {
 }
 
 //Since we need the featurelevel, we need to create the shaders from beginplay, and not in the ctor.
-void AShaderPluginDemoCharacter::BeginPlay() {
+void AShaderPluginDemoCharacter::BeginPlay()
+{
     // Call the base class
     Super::BeginPlay();
     FP_Gun->AttachToComponent(Mesh1P,
@@ -91,47 +88,57 @@ void AShaderPluginDemoCharacter::BeginPlay() {
 }
 
 //Do not forget cleanup :)
-void AShaderPluginDemoCharacter::BeginDestroy() {
+void AShaderPluginDemoCharacter::BeginDestroy()
+{
     Super::BeginDestroy();
 
-    if (PixelShading) {
+    if (PixelShading)
+    {
         delete PixelShading;
     }
 
-    if (ComputeShading) {
+    if (ComputeShading)
+    {
         delete ComputeShading;
     }
 }
 
 //Saving functions
-void AShaderPluginDemoCharacter::SavePixelShaderOutput() {
+void AShaderPluginDemoCharacter::SavePixelShaderOutput()
+{
     PixelShading->Save();
 }
-void AShaderPluginDemoCharacter::SaveComputeShaderOutput() {
+void AShaderPluginDemoCharacter::SaveComputeShaderOutput()
+{
     ComputeShading->Save();
 }
 
-void AShaderPluginDemoCharacter::ModifyComputeShaderBlend(float NewScalar) {
+void AShaderPluginDemoCharacter::ModifyComputeShaderBlend(float NewScalar)
+{
     ComputeShaderBlendScalar = NewScalar;
 }
 
-void AShaderPluginDemoCharacter::Tick(float DeltaSeconds) {
+void AShaderPluginDemoCharacter::Tick(float DeltaSeconds)
+{
     Super::Tick(DeltaSeconds);
 
     TotalElapsedTime += DeltaSeconds;
 
-    if (PixelShading) {
+    if (PixelShading)
+    {
         EndColorBuildup = FMath::Clamp(EndColorBuildup + DeltaSeconds *
                                        EndColorBuildupDirection, 0.0f, 1.0f);
 
-        if (EndColorBuildup >= 1.0 || EndColorBuildup <= 0) {
+        if (EndColorBuildup >= 1.0 || EndColorBuildup <= 0)
+        {
             EndColorBuildupDirection *= -1;
         }
 
 
         FTexture2DRHIRef InputTexture = NULL;
 
-        if (ComputeShading) {
+        if (ComputeShading)
+        {
             ComputeShading->ExecuteComputeShader(TotalElapsedTime);
             InputTexture =
                 ComputeShading->GetTexture(); //This is the output texture from the compute shader that we will pass to the pixel shader.
@@ -144,7 +151,8 @@ void AShaderPluginDemoCharacter::Tick(float DeltaSeconds) {
     }
 }
 
-void AShaderPluginDemoCharacter::OnFire() {
+void AShaderPluginDemoCharacter::OnFire()
+{
     //Try to set a texture to the object we hit!
     FHitResult HitResult;
     FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
@@ -154,15 +162,18 @@ void AShaderPluginDemoCharacter::OnFire() {
     QueryParams.AddIgnoredActor(this);
 
     if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation,
-            ECC_Visibility, QueryParams)) {
+            ECC_Visibility, QueryParams))
+    {
         TArray<UStaticMeshComponent*> StaticMeshComponents =
             TArray<UStaticMeshComponent*>();
         AActor* HitActor = HitResult.GetActor();
 
-        if (NULL != HitActor) {
+        if (NULL != HitActor)
+        {
             HitActor->GetComponents<UStaticMeshComponent>(StaticMeshComponents);
 
-            for (int32 i = 0; i < StaticMeshComponents.Num(); i++) {
+            for (int32 i = 0; i < StaticMeshComponents.Num(); i++)
+            {
                 UStaticMeshComponent* CurrentStaticMeshPtr = StaticMeshComponents[i];
                 CurrentStaticMeshPtr->SetMaterial(0, MaterialToApplyToClickedObject);
                 UMaterialInstanceDynamic* MID =
@@ -174,23 +185,26 @@ void AShaderPluginDemoCharacter::OnFire() {
     }
 
     // try and play the sound if specified
-    if (FireSound != NULL) {
+    if (FireSound != NULL)
+    {
         UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
     }
 
     // try and play a firing animation if specified
-    if (FireAnimation != NULL) {
+    if (FireAnimation != NULL)
+    {
         // Get the animation object for the arms mesh
         UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
 
-        if (AnimInstance != NULL) {
+        if (AnimInstance != NULL)
+        {
             AnimInstance->Montage_Play(FireAnimation, 1.f);
         }
     }
 }
 
-void AShaderPluginDemoCharacter::SetupPlayerInputComponent(
-    class UInputComponent* InputComponent) {
+void AShaderPluginDemoCharacter::SetupPlayerInputComponent(UInputComponent* InputComponent)
+{
     // set up gameplay key bindings
     check(InputComponent);
 
@@ -233,7 +247,8 @@ void AShaderPluginDemoCharacter::SetupPlayerInputComponent(
     InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
     //InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AShaderPluginDemoCharacter::TouchStarted);
-    if (EnableTouchscreenMovement(InputComponent) == false) {
+    if (EnableTouchscreenMovement(InputComponent) == false)
+    {
         InputComponent->BindAction("Fire", IE_Pressed, this,
                                    &AShaderPluginDemoCharacter::OnFire);
     }
@@ -255,8 +270,10 @@ void AShaderPluginDemoCharacter::SetupPlayerInputComponent(
 }
 
 void AShaderPluginDemoCharacter::BeginTouch(const ETouchIndex::Type FingerIndex,
-        const FVector Location) {
-    if (TouchItem.bIsPressed == true) {
+        const FVector Location)
+{
+    if (TouchItem.bIsPressed == true)
+    {
         return;
     }
 
@@ -267,12 +284,15 @@ void AShaderPluginDemoCharacter::BeginTouch(const ETouchIndex::Type FingerIndex,
 }
 
 void AShaderPluginDemoCharacter::EndTouch(const ETouchIndex::Type FingerIndex,
-        const FVector Location) {
-    if (TouchItem.bIsPressed == false) {
+        const FVector Location)
+{
+    if (TouchItem.bIsPressed == false)
+    {
         return;
     }
 
-    if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false)) {
+    if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
+    {
         OnFire();
     }
 
@@ -280,25 +300,32 @@ void AShaderPluginDemoCharacter::EndTouch(const ETouchIndex::Type FingerIndex,
 }
 
 void AShaderPluginDemoCharacter::TouchUpdate(const ETouchIndex::Type
-        FingerIndex, const FVector Location) {
-    if ((TouchItem.bIsPressed == true) && (TouchItem.FingerIndex == FingerIndex)) {
-        if (TouchItem.bIsPressed) {
-            if (GetWorld() != nullptr) {
+        FingerIndex, const FVector Location)
+{
+    if ((TouchItem.bIsPressed == true) && (TouchItem.FingerIndex == FingerIndex))
+    {
+        if (TouchItem.bIsPressed)
+        {
+            if (GetWorld() != nullptr)
+            {
                 UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
 
-                if (ViewportClient != nullptr) {
+                if (ViewportClient != nullptr)
+                {
                     FVector MoveDelta = Location - TouchItem.Location;
                     FVector2D ScreenSize;
                     ViewportClient->GetViewportSize(ScreenSize);
                     FVector2D ScaledDelta = FVector2D(MoveDelta.X, MoveDelta.Y) / ScreenSize;
 
-                    if (FMath::Abs(ScaledDelta.X) >= 4.0 / ScreenSize.X) {
+                    if (FMath::Abs(ScaledDelta.X) >= 4.0 / ScreenSize.X)
+                    {
                         TouchItem.bMoved = true;
                         float Value = ScaledDelta.X * BaseTurnRate;
                         AddControllerYawInput(Value);
                     }
 
-                    if (FMath::Abs(ScaledDelta.Y) >= 4.0 / ScreenSize.Y) {
+                    if (FMath::Abs(ScaledDelta.Y) >= 4.0 / ScreenSize.Y)
+                    {
                         TouchItem.bMoved = true;
                         float Value = ScaledDelta.Y * BaseTurnRate;
                         AddControllerPitchInput(Value);
@@ -313,36 +340,42 @@ void AShaderPluginDemoCharacter::TouchUpdate(const ETouchIndex::Type
     }
 }
 
-void AShaderPluginDemoCharacter::MoveForward(float Value) {
+void AShaderPluginDemoCharacter::MoveForward(float Value)
+{
     if (Value != 0.0f) {
         // add movement in that direction
         AddMovementInput(GetActorForwardVector(), Value);
     }
 }
 
-void AShaderPluginDemoCharacter::MoveRight(float Value) {
+void AShaderPluginDemoCharacter::MoveRight(float Value)
+{
     if (Value != 0.0f) {
         // add movement in that direction
         AddMovementInput(GetActorRightVector(), Value);
     }
 }
 
-void AShaderPluginDemoCharacter::TurnAtRate(float Rate) {
+void AShaderPluginDemoCharacter::TurnAtRate(float Rate)
+{
     // calculate delta for this frame from the rate information
     AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
-void AShaderPluginDemoCharacter::LookUpAtRate(float Rate) {
+void AShaderPluginDemoCharacter::LookUpAtRate(float Rate)
+{
     // calculate delta for this frame from the rate information
     AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 bool AShaderPluginDemoCharacter::EnableTouchscreenMovement(
-    class UInputComponent* InputComponent) {
+    class UInputComponent* InputComponent)
+{
     bool bResult = false;
 
     if (FPlatformMisc::GetUseVirtualJoysticks() ||
-            GetDefault<UInputSettings>()->bUseMouseForTouch) {
+            GetDefault<UInputSettings>()->bUseMouseForTouch)
+    {
         bResult = true;
         InputComponent->BindTouch(EInputEvent::IE_Pressed, this,
                                   &AShaderPluginDemoCharacter::BeginTouch);
@@ -354,7 +387,3 @@ bool AShaderPluginDemoCharacter::EnableTouchscreenMovement(
 
     return bResult;
 }
-
-
-
-
