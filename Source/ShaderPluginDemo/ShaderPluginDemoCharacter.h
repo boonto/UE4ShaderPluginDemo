@@ -128,12 +128,11 @@ public:
 		UTextureRenderTarget2D* RenderTarget;
 
 protected:
-	virtual void BeginDestroy() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	FPixelShaderUsageExample* PixelShading;
-	FComputeShaderUsageExample* ComputeShading;
+	TUniquePtr<FPixelShaderUsageExample> PixelShading;
+	TUniquePtr<FComputeShaderUsageExample> ComputeShading;
 
 	float EndColorBuildup;
 	float EndColorBuildupDirection;
